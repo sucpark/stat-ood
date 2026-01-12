@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 import torch
 import torch.nn as nn
 from tqdm import tqdm
@@ -6,12 +7,13 @@ from tqdm import tqdm
 log = logging.getLogger(__name__)
 
 class Trainer:
-    def __init__(self, cfg, model, train_loader, val_loader, optimizer):
+    def __init__(self, cfg, model, train_loader, val_loader, optimizer, results_logger=None):
         self.cfg = cfg
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.optimizer = optimizer
+        self.results = results_logger
 
         # Handle "auto" device detection
         device_str = cfg.experiment.device
@@ -25,6 +27,7 @@ class Trainer:
 
         self.device = torch.device(device_str)
         self.model.to(self.device)
+        self._last_train_loss = 0.0
 
     def train(self):
         log.info("Starting training...")
@@ -49,6 +52,7 @@ class Trainer:
                 pbar.set_postfix({'loss': loss.item()})
 
             avg_train_loss = train_loss / len(self.train_loader)
+            self._last_train_loss = avg_train_loss
             log.info(f"Epoch {epoch+1} Train Loss: {avg_train_loss:.4f}")
 
             # Validation
@@ -77,3 +81,7 @@ class Trainer:
         accuracy = correct / total
 
         log.info(f"Epoch {epoch+1} Val Loss: {avg_val_loss:.4f} | Accuracy: {accuracy:.4f}")
+
+        # Log to results logger
+        if self.results:
+            self.results.log_epoch(epoch + 1, self._last_train_loss, avg_val_loss, accuracy)

@@ -1,4 +1,5 @@
 import hydra
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 import logging
 import torch
@@ -10,6 +11,7 @@ from src.data.loader import DataLoader
 from src.models.wrapper import ModelWrapper
 from src.engine.trainer import Trainer
 from src.ood.calculator import OODCalculator
+from src.utils.results import ResultsLogger
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,11 @@ def main(cfg: DictConfig):
             device_str = "cpu"
 
     log.info(f"Using device: {device_str}")
+
+    # Initialize Results Logger
+    output_dir = HydraConfig.get().runtime.output_dir
+    results = ResultsLogger(output_dir)
+    results.log_config(OmegaConf.to_container(cfg, resolve=True))
 
     # 2. Load Data
     log.info("Initializing Data Loader...")
@@ -48,8 +55,13 @@ def main(cfg: DictConfig):
     # 4. Train
     if not cfg.experiment.debug:
         log.info("Initializing Trainer...")
-        trainer = Trainer(cfg, model, train_loader, val_loader, optimizer)
+        trainer = Trainer(cfg, model, train_loader, val_loader, optimizer, results)
         trainer.train()
+
+        # Log final validation accuracy from training history
+        if results.history:
+            final_accuracy = results.history[-1]["val_accuracy"]
+            results.log_val_accuracy(final_accuracy)
 
     # 5. OOD Calculation
     log.info("Starting OOD Fitting...")
@@ -117,6 +129,10 @@ def main(cfg: DictConfig):
 
     # Calculate Metrics
     auroc, fpr95 = ood_calc.evaluate(id_dists, ood_dists)
+
+    # Log and save results
+    results.log_ood_metrics(auroc, fpr95)
+    results.save()
 
     log.info(f"OOD Results - AUROC: {auroc:.4f}, FPR@95: {fpr95:.4f}")
     log.info("Pipeline finished.")
