@@ -1,7 +1,7 @@
-name: "bert-base-uncased"
+name: "intfloat/e5-base-v2"
 num_labels: 150 # CLINC150
-maxlen: 128
-pooling: "cls"
+maxlen: 512
+pooling: "mean"
 training:
   batch_size: 32
   learning_rate: 2e-5

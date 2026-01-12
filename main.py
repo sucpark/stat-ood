@@ -71,7 +71,13 @@ def main(cfg: DictConfig):
             labels = batch['intent'].to(device)
             
             _, _ = model(input_ids, attention_mask)
-            features = model.get_features()
+            
+            # Fetch appropriate features based on OOD method
+            # This is a bit coupled, but simple for this scale.
+            if cfg.ood_method == 'energy':
+                features = model.get_features('logits')
+            else:
+                features = model.get_features('pooled_output')
             
             train_features.append(features.cpu())
             train_labels.append(labels.cpu())
@@ -95,7 +101,11 @@ def main(cfg: DictConfig):
                 attention_mask = batch['attention_mask'].to(device)
                 
                 _, _ = model(input_ids, attention_mask)
-                features = model.get_features()
+                
+                if cfg.ood_method == 'energy':
+                    features = model.get_features('logits')
+                else:
+                    features = model.get_features('pooled_output')
                 
                 dists = ood_calc.predict(features)
                 scores.append(dists)

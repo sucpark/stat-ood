@@ -1,0 +1,8 @@
+name: "massive"
+locale: "ko-KR"
+holdout_threshold: 50
+maxlen: 128
+loader:
+  batch_size: 32
+  num_workers: 0
+  pin_memory: true

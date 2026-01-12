@@ -16,3 +16,5 @@ experiment:
   seed: 42
   debug: false
   device: "mps" # Native macOS GPU support
+
+ood_method: "mahalanobis" # or 'energy'
