@@ -5,6 +5,7 @@ import wandb
 import torch
 import numpy as np
 from transformers import AutoTokenizer
+from tqdm import tqdm
 
 from src.data.loader import DataLoader
 from src.models.wrapper import ModelWrapper
@@ -75,7 +76,7 @@ def main(cfg: DictConfig):
     model.to(device)
     
     with torch.no_grad():
-        for batch in train_loader:
+        for batch in tqdm(train_loader, desc="Extracting ID Features"):
             input_ids = batch['input_ids'].to(device)
             attention_mask = batch['attention_mask'].to(device)
             labels = batch['intent'].to(device)
@@ -106,7 +107,7 @@ def main(cfg: DictConfig):
     def get_scores(loader):
         scores = []
         with torch.no_grad():
-            for batch in loader:
+            for batch in tqdm(loader, desc="Evaluating OOD"):
                 input_ids = batch['input_ids'].to(device)
                 attention_mask = batch['attention_mask'].to(device)
                 
