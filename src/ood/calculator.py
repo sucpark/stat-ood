@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from sklearn.covariance import EmpiricalCovariance
+from sklearn.metrics import roc_auc_score, roc_curve
 import logging
 from tqdm import tqdm
 
@@ -68,25 +69,16 @@ class OODCalculator:
         precision = self.precision_matrix # [feature_dim, feature_dim]
         
         batch_size = features.size(0)
-        num_classes = means.size(0)
-        
-        # Vectorized implementation could be tricky with full precision matrix.
-        # Iterating per sample or per class.
-        # Let's do per class to leverage matrix ops.
         
         dists = []
-        for c in range(num_classes):
+        for c in range(means.size(0)):
+             # We only compute for classes that have means (simple optimization for zeros?)
+             # Actually self.means_tensor might have zeros for classes not in training batch?
+             # For now assume mostly full.
+             
              mean = means[c] # [feature_dim]
-             # broadcast subtraction
              diff = features - mean # [batch_size, feature_dim]
-             
-             # batch matmul: (B, D) @ (D, D) @ (B, D)^T is too big (B, B)
-             # we want diagonal of (diff @ precision @ diff.T)
-             
-             # temp = diff @ precision -> [batch_size, feature_dim]
              temp = torch.matmul(diff, precision)
-             
-             # term = sum(temp * diff, dim=1)
              term = torch.sum(temp * diff, dim=1) # [batch_size]
              dists.append(term)
              
@@ -96,3 +88,34 @@ class OODCalculator:
         min_dists, _ = torch.min(dists, dim=1)
         
         return min_dists
+
+    def evaluate(self, id_scores, ood_scores):
+        """
+        Compute AUROC and FPR@TPR95
+        id_scores: distances for ID data (lower is better/more confident, but Mahalanobis is distance)
+                   Actually, Mahalanobis Distance is HIGHER for OOD.
+                   So ID should have LOW distance, OOD should have HIGH distance.
+                   We can treat -distance as "confidence score".
+                   ID: close to 0 (confidence high). OOD: large (confidence low).
+                   Score = -distance.
+        """
+        id_scores = -id_scores.cpu().numpy()
+        ood_scores = -ood_scores.cpu().numpy()
+        
+        y_true = np.concatenate([np.ones_like(id_scores), np.zeros_like(ood_scores)]) # 1: ID, 0: OOD
+        y_scores = np.concatenate([id_scores, ood_scores])
+        
+        # AUROC
+        auroc = roc_auc_score(y_true, y_scores)
+        
+        # FPR @ TPR 95
+        fpr, tpr, thresholds = roc_curve(y_true, y_scores)
+        # Find FPR when TPR >= 0.95
+        # Since sklearn roc_curve returns increasing FPR, we look for first index where TPR >= 0.95
+        idx = np.where(tpr >= 0.95)[0]
+        if len(idx) > 0:
+            fpr95 = fpr[idx[0]]
+        else:
+            fpr95 = 1.0 # Should not happen if curve is complete
+            
+        return auroc, fpr95
