@@ -21,7 +21,7 @@ checkpoints/
 
 # **Dataset files are managed by HF datasets cache, but local data should be ignored**
 
-data/
+/data/
 resources/
 \*.csv  
 \*.jsonl  

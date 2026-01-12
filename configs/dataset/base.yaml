@@ -1,0 +1,5 @@
+name: "clinc_oos"
+subset: "plus" # 'small' or 'plus'
+loader:
+  num_workers: 0 # MPS compatibility often works best with 0
+  pin_memory: true
