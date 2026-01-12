@@ -35,6 +35,33 @@ Designed for researchers and engineers, this project emphasizes **traceability, 
 
 ---
 
+## ✅ Supported Components
+
+Stat-OOD is designed to be modular. You can easily switch components via Hydra config.
+
+### 🤖 Models
+| Model Type | Config Name | HuggingFace Checkpoint | Recommended Pooling |
+| :--- | :--- | :--- | :--- |
+| **BERT (Default)** | `model=base` | `bert-base-uncased` | `cls` |
+| **E5 (English)** | `model=e5` | `intfloat/e5-base-v2` | `mean` |
+| **E5 (Multilingual)** | *Custom* | `intfloat/multilingual-e5-base` | `mean` |
+| **KLUE-BERT (Korean)** | *Custom* | `klue/bert-base` | `cls` |
+| **Any HF Model** | *Custom* | *Any `AutoModel` compatible* | `cls`, `mean`, `max` |
+
+### 📚 Datasets
+| Dataset | Config Name | Language | Description |
+| :--- | :--- | :--- | :--- |
+| **CLINC150** | `dataset=base` | English | Standard OOD benchmark. Explicit `oos` label. |
+| **MASSIVE** | `dataset=massive_ko` | Korean (ko-KR) | Multilingual SLURP. Uses Holdout Strategy (Labels ≥ 50). |
+
+### 📐 Statistical Methods
+| Method | Config Key | Description |
+| :--- | :--- | :--- |
+| **Mahalanobis** | `ood_method="mahalanobis"` | **(Default)** Distance to class centroids in feature space. Requires `fit()`. |
+| **Energy Score** | `ood_method="energy"` | Logit-based energy function. Lower energy (higher score) = OOD. |
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
