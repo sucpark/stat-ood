@@ -84,6 +84,46 @@ wandb agent <SWEEP_ID>
 
 ---
 
+## 🧪 Advanced Experiments
+
+Stat-OOD supports flexible research experiments across **Models**, **Datasets**, and **OOD Methods**.
+
+### 1. Korean OOD Detection (MASSIVE Dataset)
+Use the `massive_ko` dataset configuration to experiment with Korean intent detection.
+```bash
+uv run python main.py dataset=massive_ko model.name="klue/bert-base"
+```
+*   **Note**: This uses a holdout strategy where intent labels >= 50 are treated as OOD.
+
+### 2. High-Performance Embeddings (E5 Model)
+Switch to `intfloat/e5-base-v2` with **Mean Pooling** for superior cluster separation.
+```bash
+uv run python main.py model=e5
+```
+
+### 3. Alternative OOD Methods (Energy Score)
+Compare Mahalanobis Distance with **Energy Score** (Logit-based).
+```bash
+# Energy Score (Logit-based)
+uv run python main.py ood_method="energy"
+
+# Mahalanobis Distance (Feature-based, Default)
+uv run python main.py ood_method="mahalanobis"
+```
+
+### 4. Full Comparison Experiment
+Run a specific combination to reproduce paper-like results:
+```bash
+# Experiment: Korean OOD using E5-Multilingual and Energy Score
+uv run python main.py \
+    dataset=massive_ko \
+    model.name="intfloat/multilingual-e5-base" \
+    model.pooling="mean" \
+    ood_method="energy"
+```
+
+---
+
 ## 📊 Methodology
 
 **Stat-OOD** operates in two phases:
