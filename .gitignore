@@ -1,0 +1,43 @@
+# **\--- Python / UV \---**
+
+.venv/  
+pycache/  
+\*.py\[cod\]  
+\*$py.class  
+.ipynb\_checkpoints/
+
+# **\--- ML / Model Weights \---**
+
+# **Do not track large model weights or checkpoints**
+
+outputs/  
+checkpoints/  
+\*.pt  
+\*.pth  
+\*.bin  
+\*.onnx
+
+# **\--- Data \---**
+
+# **Dataset files are managed by HF datasets cache, but local data should be ignored**
+
+data/
+resources/
+\*.csv  
+\*.jsonl  
+\*.parquet
+
+# **\--- Experiment Tracking (WandB) \---**
+
+wandb/
+
+# **\--- Environment & Config \---**
+
+.env  
+.hydra/  
+multirun/
+
+# **\--- OS Specific \---**
+
+.DS\_Store  
+Thumbs.db
