@@ -15,6 +15,6 @@ wandb:
 experiment:
   seed: 42
   debug: false
-  device: "mps" # Native macOS GPU support
+  device: "auto" # Auto-detects (CUDA > MPS > CPU)
 
 ood_method: "mahalanobis" # or 'energy'

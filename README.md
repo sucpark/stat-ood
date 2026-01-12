@@ -62,6 +62,29 @@ Stat-OOD is designed to be modular. You can easily switch components via Hydra c
 
 ---
 
+## 💻 Platform Compatibility & Colab
+
+Stat-OOD automatically detects the best available hardware accelerator:
+*   **NVIDIA GPU (CUDA)**: Preferred (Colab, Linux Servers).
+*   **Apple Silicon (MPS)**: Supported (MacBook M1/M2/M3).
+*   **CPU**: Fallback.
+
+### Running on Google Colab
+1.  Open Colab and select **Runtime > Change runtime type > T4 GPU**.
+2.  Install dependencies:
+    ```bash
+    !pip install -q uv
+    !uv sync
+    ```
+3.  Clone and Run:
+    ```bash
+    !git clone https://github.com/sucpark/stat-ood.git
+    %cd stat-ood
+    !uv run python main.py
+    ```
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites

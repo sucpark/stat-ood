@@ -24,7 +24,17 @@ def main(cfg: DictConfig):
         mode="disabled" if cfg.experiment.debug else "online"
     )
     
-    log.info(f"Using device: {cfg.experiment.device}")
+    # Device Handling
+    device_str = cfg.experiment.device
+    if device_str == "auto":
+        if torch.cuda.is_available():
+            device_str = "cuda"
+        elif torch.backends.mps.is_available():
+            device_str = "mps"
+        else:
+            device_str = "cpu"
+    
+    log.info(f"Using device: {device_str}")
     
     # 2. Load Data
     log.info("Initializing Data Loader...")
@@ -61,7 +71,7 @@ def main(cfg: DictConfig):
     train_features = []
     train_labels = []
     
-    device = torch.device(cfg.experiment.device)
+    device = torch.device(device_str)
     model.to(device)
     
     with torch.no_grad():
