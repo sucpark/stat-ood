@@ -52,7 +52,7 @@ Stat-OOD is designed to be modular. You can easily switch components via Hydra c
 | Dataset | Config Name | Language | Description |
 | :--- | :--- | :--- | :--- |
 | **CLINC150** | `dataset=base` | English | Standard OOD benchmark. Explicit `oos` label. |
-| **MASSIVE** | `dataset=massive_ko` | Korean (ko-KR) | Multilingual SLURP. Uses Holdout Strategy (Labels ≥ 50). |
+| **MASSIVE** | `dataset=massive_ko` | Korean (ko) | Loaded via `mteb/amazon_massive_intent`. Uses Holdout Strategy (Labels ≥ 50). |
 
 ### 📐 Statistical Methods
 | Method | Config Key | Description |

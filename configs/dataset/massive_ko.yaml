@@ -1,4 +1,4 @@
-name: "massive"
+name: "massive" # Internally maps to mteb/amazon_massive_intent
 locale: "ko-KR"
 holdout_threshold: 50
 maxlen: 128
