@@ -16,19 +16,34 @@ class DataLoader:
         
         # Load dataset
         if self.cfg.name == "clinc_oos":
-            self.dataset = load_dataset("clinc_oos", self.cfg.subset)
+            self.dataset = load_dataset("clinc_oos", self.cfg.subset, trust_remote_code=True)
             oos_label = 150
             # Define ID/OOD check
             def is_id(example): return example['intent'] != oos_label
             def is_ood(example): return example['intent'] == oos_label
             
         elif self.cfg.name == "massive":
-            # qanastek/MASSIVE or AmazonScience/massive
-            # We use qanastek/MASSIVE as it's often more accessible formatting
-            self.dataset = load_dataset("qanastek/MASSIVE", self.cfg.locale)
-            # MASSIVE has 60 intents (0-59). No explicit OOD.
-            # Research Mode: Holdout classes for OOD.
-            # e.g. Train on 0-49, Test on 0-59. (50-59 are OOD)
+            # Use mteb/amazon_massive_intent (Parquet/JSON based, no script error)
+            # This dataset has 'label' as string (e.g. 'alarm_set'). We need to cast it to ClassLabel or map it.
+            # Convert 'ko-KR' to 'ko' for this specific dataset
+            lang = "ko" if self.cfg.locale.startswith("ko") else self.cfg.locale
+            self.dataset = load_dataset("mteb/amazon_massive_intent", lang)
+            
+            # Rename columns to match expected format
+            # 'text' -> 'text' (handled by preprocess), 'label' (string) -> 'intent' (int)
+            
+            # We need to ensure consistent label indexing.
+            # Get unique labels from train set and sort them to ensure deterministic mapping
+            unique_labels = sorted(list(set(self.dataset['train']['label'])))
+            label2id = {l: i for i, l in enumerate(unique_labels)}
+            
+            def map_labels(example):
+                example['intent'] = label2id[example['label']]
+                return example
+                
+            self.dataset = self.dataset.map(map_labels)
+            
+            # MASSIVE has 60 intents.
             holdout_threshold = self.cfg.get('holdout_threshold', 50)
             
             def is_id(example): return example['intent'] < holdout_threshold
