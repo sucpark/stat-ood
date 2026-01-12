@@ -134,13 +134,14 @@ def main(cfg: DictConfig):
     log.info("Creating Visualizations...")
     
     # Histogram
+    score_label = "Mahalanobis Distance" if cfg.ood_method == "mahalanobis" else "Energy Score"
     data = [[s, "ID"] for s in id_dists.numpy()] + [[s, "OOD"] for s in ood_dists.numpy()]
-    table = wandb.Table(data=data, columns=["Mahalanobis Distance", "Type"])
+    table = wandb.Table(data=data, columns=[score_label, "Type"])
     
     wandb.log({
         "ood/auroc": auroc,
         "ood/fpr95": fpr95,
-        "ood/dist_histogram": wandb.plot.histogram(table, "Mahalanobis Distance", title="ID vs OOD Distance Distribution")
+        "ood/dist_histogram": wandb.plot.histogram(table, score_label, title=f"ID vs OOD {score_label} Distribution")
     })
     
     log.info("Pipeline finished.")
