@@ -12,7 +12,18 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.optimizer = optimizer
-        self.device = torch.device(cfg.experiment.device)
+
+        # Handle "auto" device detection
+        device_str = cfg.experiment.device
+        if device_str == "auto":
+            if torch.cuda.is_available():
+                device_str = "cuda"
+            elif torch.backends.mps.is_available():
+                device_str = "mps"
+            else:
+                device_str = "cpu"
+
+        self.device = torch.device(device_str)
         self.model.to(self.device)
 
     def train(self):
